@@ -7,7 +7,23 @@ import matplotlib.colors as colors
 import json
 import os
 import math
-from animate import make_animation
+import matplotlib.gridspec as gridspec
+from animate import make_animation, make_video
+
+MONTHS= {
+	"01" : "Oca",
+	"02" : "Sub",
+	"03" : "Mar",
+	"04" : "Nis",
+	"05" : "May",
+	"06" : "Haz",
+	"07" : "Tem",
+	"08" : "Agu",
+	"09" : "Eyl",
+	"10" : "Eki",
+	"11" : "Kas",
+	"12" : "Ara"
+}
 
 def read_basemap(geojson):
 	data = gpd.read_file(geojson)
@@ -49,13 +65,15 @@ def plot_style():
 		])
 	
 	boundaries = list(range(-10,105,5))
-	print(plt.get_cmap('YlOrRd'))
-	cmap2 = truncate_colormap(plt.get_cmap('YlOrRd'), 0, 1, 22)
-	norm = colors.BoundaryNorm(boundaries, cmap2.N, clip=True) #cmap.N,
+	
+	cmap2 = truncate_colormap(plt.get_cmap('YlOrBr'), 0, 1, 22)
+	cmap2.set_under("w")
+	norm = colors.BoundaryNorm(boundaries, cmap2.N, clip=True)
 
 	return {
 		"cmap": cmap2,
-		"norm": norm
+		"norm": norm,
+		"ticks": boundaries
 	}
 
 def plot_map(map_data, data, week):
@@ -68,39 +86,48 @@ def plot_map(map_data, data, week):
 			arr[x] = data[x]
 	
 	map_data['colors'] = arr
-	
+
 	fig, ax = plt.subplots(1, figsize=(8, 6))
 
 	style = plot_style()
 	
 	sm = plt.cm.ScalarMappable(cmap=style['cmap'], 
 				norm=style['norm'])
-	cb = fig.colorbar(sm, orientation='horizontal')
-	cb.set_label("Yuzdelik artis %")
+	
+	cb = fig.colorbar(sm, ticks= style['ticks'], orientation='horizontal')
+	cb.set_label("Oransal artis %")
 	
 	map_data.plot(column = 'colors', ax = ax, 
-							edgecolor='grey',
+							edgecolor='black',
+							linewidth=0.5,
 							cmap = style['cmap'],
 							norm = style['norm'],
 							legend = False)
 	
+	title = "Normal uzeri olum orani - Excess mortality rate" #" Hafta: {}".format(format_week(week))
+	plt.title(title, {'fontsize': 18})
+	txt = "{}".format(format_week(week))
+	fig.text(0.3, 0.22, txt, {'color': "blue", 'fontsize': 24}, alpha=.8)
+
+	#logo = plt.imread('data/twitter.png')
+	#fig.figimage(logo, 0, 0, alpha=.5)
 	
+	ack = "Gorsel: @cihansah73\nData  : @GucluYaman"
+	fig.text(0.01, 0.01, ack,{'color': 'blue', 'fontsize': 12}, alpha=.8)
 	plt.tight_layout()
-	
-	title = "Normal uzeri olum miktari (%) Hafta: {}".format(format_week(week))
-	plt.title(title)
-	
-	fname = "images/er-%s.png" % week
+	fname = "images/em-{}.png".format(week)
 	plt.savefig(fname, bbox_inches='tight')
 	plt.close()
 
 def format_week(week):
 	week2, week1 = week.split("-")
+	month1 = MONTHS.get(week1[4:6], week1[4:6])
+	month2 = MONTHS.get(week2[4:6], week2[4:6])
+
+	week1 = "{} {}".format(week1[6:8], month1 )
+	week2 = "{} {}".format(week2[6:8], month2 )
 	
-	week1 = "{}.{}.{}".format(week1[6:8], week1[4:6], week1[0:4])
-	week2 = "{}.{}.{}".format(week2[6:8], week2[4:6], week2[0:4])
-	
-	week = "{}-{}".format(week1, week2)
+	week = "{}-{} {}".format(week1, week2, week[0:4])
 	
 	return week
 
@@ -166,6 +193,6 @@ if __name__ == "__main__":
 			week_data[city_indices[city]] = data[city][week]
 		plot_map(map_data, week_data, week)
 
-	#print(map_data.name)
-	print("Making animation ...")
-	print(make_animation("images", "anim.gif"))
+	
+	make_video("images", "anim.avi")
+	make_animation("images", "anim.gif")
