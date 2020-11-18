@@ -79,8 +79,8 @@ def plot_style_custom():
 
 def plot_style():
 	
-	boundaries = list(range(-10,105,5))
-	
+	boundaries = list(range(-5,105,5))
+	boundaries.insert(0, -30)
 	cmap2 = truncate_colormap(plt.get_cmap('YlOrBr'), 0.05, 1, 22)
 	cmap2.set_under("w")
 	norm = colors.BoundaryNorm(boundaries, cmap2.N) #, clip=True)
