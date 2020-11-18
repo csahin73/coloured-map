@@ -8,7 +8,7 @@ import json
 import os
 import math
 import matplotlib.gridspec as gridspec
-from animate import make_animation, make_video
+from animate import make_animation, make_video, make_mp4
 
 MONTHS= {
 	"01" : "Oca",
@@ -56,19 +56,34 @@ def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
         cmap(np.linspace(minval, maxval, n)))
     return new_cmap
 
+def plot_style_custom():
+	
+	color_list = ['red', '#000000','#444444', 
+		'#666666', '#ffffff', 'blue', 'orange'
+		]
+	cmap = colors.ListedColormap(color_list)
+	vmin = -10
+	vmax = 105
+	bins = int((vmax - vmin)/len(color_list))
+	boundaries = list(range(-10,105,bins))
+	
+	
+	cmap.set_under("w")
+	norm = colors.BoundaryNorm(boundaries, cmap.N) #, clip=True)
 
+	return {
+		"cmap": cmap,
+		"norm": norm,
+		"ticks": boundaries
+	}
 
 def plot_style():
-	cmap = colors.ListedColormap(
-		['red', '#000000','#444444', 
-		'#666666', '#ffffff', 'blue', 'orange'
-		])
 	
 	boundaries = list(range(-10,105,5))
 	
-	cmap2 = truncate_colormap(plt.get_cmap('YlOrBr'), 0, 1, 22)
+	cmap2 = truncate_colormap(plt.get_cmap('YlOrBr'), 0.05, 1, 22)
 	cmap2.set_under("w")
-	norm = colors.BoundaryNorm(boundaries, cmap2.N, clip=True)
+	norm = colors.BoundaryNorm(boundaries, cmap2.N) #, clip=True)
 
 	return {
 		"cmap": cmap2,
@@ -77,7 +92,7 @@ def plot_style():
 	}
 
 def plot_map(map_data, data, week):
-	arr = np.full(len(map_data.name), 0)
+	arr = np.full(len(map_data.name), -100)
 	
 	for x in data.keys():
 		if math.isnan(data[x]):
@@ -85,6 +100,7 @@ def plot_map(map_data, data, week):
 		else: 
 			arr[x] = data[x]
 	
+
 	map_data['colors'] = arr
 
 	fig, ax = plt.subplots(1, figsize=(8, 6))
@@ -94,7 +110,8 @@ def plot_map(map_data, data, week):
 	sm = plt.cm.ScalarMappable(cmap=style['cmap'], 
 				norm=style['norm'])
 	
-	cb = fig.colorbar(sm, ticks= style['ticks'], orientation='horizontal')
+	cb = fig.colorbar(sm, ticks= style['ticks'], 
+						orientation='horizontal', extend="max")
 	cb.set_label("Oransal artis %")
 	
 	map_data.plot(column = 'colors', ax = ax, 
@@ -104,16 +121,15 @@ def plot_map(map_data, data, week):
 							norm = style['norm'],
 							legend = False)
 	
-	title = "Normal uzeri olum orani - Excess mortality rate" #" Hafta: {}".format(format_week(week))
-	plt.title(title, {'fontsize': 18})
+	title = "Normal uzeri olum orani - Excess mortality rate" 
+	plt.title(title, {'fontsize': 20})
+	
 	txt = "{}".format(format_week(week))
-	fig.text(0.3, 0.22, txt, {'color': "blue", 'fontsize': 24}, alpha=.8)
+	fig.text(0.3, 0.22, txt, {'color': "blue", 'fontsize': 24}, alpha=1)
 
-	#logo = plt.imread('data/twitter.png')
-	#fig.figimage(logo, 0, 0, alpha=.5)
 	
 	ack = "Gorsel: @cihansah73\nData  : @GucluYaman"
-	fig.text(0.01, 0.01, ack,{'color': 'blue', 'fontsize': 12}, alpha=.8)
+	fig.text(0.016, 0.0, ack,{'color': 'blue', 'fontsize': 10}, alpha=.7)
 	plt.tight_layout()
 	fname = "images/em-{}.png".format(week)
 	plt.savefig(fname, bbox_inches='tight')
@@ -162,8 +178,6 @@ def parse_data(csv_file):
 
 if __name__ == "__main__":
 	
-	#search = ['Ankara', 'Kayseri', 'Istanbul', 'Mugla', 'Izmir', 'Kars', 'Mersin']
-	
 	map_data = read_basemap('data/tr-cities-modified.json')
 
 	city_list = ['Denizli','Istanbul', 'Bursa', 'Kahramanmaras']
@@ -195,4 +209,6 @@ if __name__ == "__main__":
 
 	
 	make_video("images", "anim.avi")
-	make_animation("images", "anim.gif")
+	animgif = make_animation("images", "anim.gif")
+
+	make_mp4(animgif, "images/anim.mp4")

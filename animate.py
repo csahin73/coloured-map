@@ -21,12 +21,22 @@ def make_animation(inpdir, output):
                append_images=final[1:],
                save_all=True,
                duration=500)
+    return output
+def make_mp4(avi, output):
+    
+    cmd = []
+    cmd.append("ffmpeg -y -i {}".format(avi)) 
+    cmd.append("-movflags faststart -pix_fmt yuv420p -vf") 
+    cmd.append("'scale=trunc(iw/2)*2:trunc(ih/2)*2'")
+    cmd.append(output)
+
+    cmd = " ".join(cmd)
+    os.system(cmd)
+    return output
 
 def make_video(inpdir, output):
 
-    
     img_files = sorted((fn for fn in os.listdir(inpdir) if fn.endswith('.png')))
-
     images = [cv2.imread(os.path.join(inpdir,fn)) for fn in  img_files]
     height, width, layers = images[0].shape
     size = (width,height)
@@ -42,6 +52,7 @@ def make_video(inpdir, output):
     for i in range(len(final)):
         out.write(final[i])
     out.release()
+    return output
     
 if __name__ == "__main__":
 
