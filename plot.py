@@ -100,7 +100,6 @@ def plot_map(map_data, data, week):
 		else: 
 			arr[x] = data[x]
 	
-
 	map_data['colors'] = arr
 
 	fig, ax = plt.subplots(1, figsize=(8, 6))
@@ -153,22 +152,28 @@ def parse_data(csv_file):
 	daterange = []
 	result = {}
 	week_list = []
+	data = data.dropna(axis=1, how='all') # Drop a year with all missing values
+	years = len(data.values[0])
+	print("Years accounted for: {} {}".format(years, csv_file))
 	for i,d in enumerate(data.values, 1):
-		weekly_sum += d[1:]
-		
+		datacols = d[1:years]
+		datacols = datacols.astype(np.float)
+		weekly_sum += datacols
 		if (i % 7 == 1):
 			label = d[0].split(".")
 			label.reverse()
+		
 		elif (i % 7 == 0):
+			
 			label1 = d[0].split(".")
 			label1.reverse()
 			label = "%s-%s" % ("".join(label1), "".join(label))
+			
 			last_el  = len(weekly_sum) - 1
-			weekly_mean = weekly_sum[0:last_el].mean()
+			weekly_mean = np.nanmean(weekly_sum[0:last_el])
 			this_year = weekly_sum[last_el]
 			change = (this_year - weekly_mean) / weekly_mean
-			change *= 100 # percentage
-			result[label] = change
+			result[label] = change*100
 			week_list.append(label)
 			weekly_sum = 0
 			
@@ -180,9 +185,13 @@ if __name__ == "__main__":
 	
 	map_data = read_basemap('data/tr-cities-modified.json')
 
-	city_list = ['Denizli','Istanbul', 'Bursa', 'Kahramanmaras']
-	city_indices = locate_cities(map_data, city_list)
+	city_list = ['Denizli','Istanbul', 'Bursa', 'Kahramanmaras',
+					'Izmir', 'Gaziantep'
+				]
+
 	
+	city_indices = locate_cities(map_data, city_list)
+	print(city_indices)
 	DATADIR = "data"
 	data = {}
 	all_weeks = []
@@ -195,8 +204,8 @@ if __name__ == "__main__":
 	all_weeks = sorted(list(set(all_weeks)))
 
 	week_start = "20190101"
-	week_end = "20201115"
-
+	week_end = "20201111"
+	
 	for week in all_weeks:
 		if (week > week_end or week < week_start):
 			continue
