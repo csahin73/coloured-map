@@ -33,16 +33,23 @@ def locate_cities(map_data, search):
 	cities = map_data.name
 	mapping = {
 		"Istanbul": "İstanbul", 
-		"Kahramanmaras": 'Kahramanmaraş'
+		"Kahramanmaras": 'Kahramanmaraş',
+		"Diyarbakir": "Diyarbakır",
+		"Elazig": "Elazığ",
+		"Tekirdag": "Tekirdağ",
+		"Usak": "Uşak"
 	}
 	result = {}
 	for i,city in enumerate(search):
+
 		print("Searching for {} ...".format(city))
-		city_inmap = mapping.get(city, city)
+		city_inmap = city.title()
+		city_inmap = mapping.get(city_inmap, city_inmap)
+		
 		try:
 			result[city] = np.where(cities == city_inmap)[0].tolist()[0]
 		except:
-			print("{} not found ...".format(city))
+			print("{} not found ...".format(city_inmap))
 			print(map_data.name.tolist())
 			pass
 	return result
@@ -159,11 +166,11 @@ def parse_data(csv_file):
 		datacols = d[1:years]
 		datacols = datacols.astype(np.float)
 		weekly_sum += datacols
-		if (i % 7 == 1):
+		if (i % 8 == 1):
 			label = d[0].split(".")
 			label.reverse()
 		
-		elif (i % 7 == 0):
+		elif (i % 8 == 0):
 			
 			label1 = d[0].split(".")
 			label1.reverse()
@@ -185,8 +192,12 @@ if __name__ == "__main__":
 	
 	map_data = read_basemap('data/tr-cities-modified.json')
 
-	city_list = ['Denizli','Istanbul', 'Bursa', 'Kahramanmaras',
-					'Izmir', 'Gaziantep'
+	city_list = ['Denizli','Istanbul', 'Bursa', 
+				 'Kahramanmaras','Izmir', 'Gaziantep',
+				 'diyarbakir', 'elazig', 'erzurum',
+				 'hatay', 'kayseri', 'kocaeli',
+				  'konya', 'malatya', 'sakarya', 
+				  'sivas', 'tekirdag', 'usak'
 				]
 
 	
@@ -206,7 +217,7 @@ if __name__ == "__main__":
 	week_start = "20190101"
 	week_end = "20201111"
 	
-	for week in all_weeks:
+	for week in all_weeks:#[0:3]:
 		if (week > week_end or week < week_start):
 			continue
 
@@ -216,6 +227,7 @@ if __name__ == "__main__":
 			week_data[city_indices[city]] = data[city][week]
 		plot_map(map_data, week_data, week)
 
+	
 	
 	make_video("images", "anim.avi")
 	animgif = make_animation("images", "anim.gif")
