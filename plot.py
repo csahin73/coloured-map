@@ -2,12 +2,11 @@ import pandas as pd
 import numpy as np
 import geopandas as gpd
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import matplotlib.colors as colors
-import json
 import os
+import sys
 import math
-import matplotlib.gridspec as gridspec
+from datetime import datetime, timedelta
 from animate import make_animation, make_video, make_mp4
 
 MONTHS= {
@@ -143,9 +142,8 @@ def plot_map(map_data, data, week):
 	plt.close()
 
 def format_week(week):
-	print(week)
 	week2, week1 = week.split("-")
-	print(week1,week2)
+	
 	month1 = MONTHS.get(week1[4:6], week1[4:6])
 	month2 = MONTHS.get(week2[4:6], week2[4:6])
 
@@ -156,7 +154,7 @@ def format_week(week):
 	
 	return week
 
-from datetime import datetime, timedelta
+
 def str_date(d_str):
 	date = datetime.strptime(d_str, "%d.%m.%Y")
 	return date
@@ -178,80 +176,49 @@ def date_label(drange):
 
 def parse_data(csv_file, start_date, end_date):
 	data = pd.read_csv(csv_file, delimiter=";")
-	weekly_sum = 0
-	last_year = 0
-	daterange = []
+	
 	result = {}
 	week_list = []
 	data = data.dropna(axis=1, how='all') # Drop a year with all missing values
 	years = len(data.values[0])
 	print("Years accounted for: {} {}".format(years, csv_file))
-	#end_date="01.03.2020"
+	
 	dfinal = str_date(end_date)
 	dstart = str_date(start_date)
 	dend = d_delta(dstart, 7)
 	drange = [dstart, dend]
+	weekly = []
 	for i,d in enumerate(data.values, 1):
 		curdate = str_date(d[0])
 
 		if (curdate > dfinal):
-			break
+			break #drange[1] = curdate
 
 		if (is_date_in_range(drange, curdate) ):
 			datacols = d[1:years]
 			datacols = datacols.astype(np.float)
-			weekly_sum += np.nansum(datacols[0:-1])
-			last_year += np.nansum(datacols[-1])
-		
+			
+			if not np.isnan(datacols[-1]):
+				weekly.append([np.nanmean(datacols[0:-1]), datacols[-1]] )
+
 		if (curdate >= drange[1]):
+			label = date_label(drange)
+			if not weekly:
+				continue
+
+			weekly_mean = np.mean(weekly, axis= 0)
 			
-			weekly_mean = weekly_sum*1./(years-2)
-			change = (last_year - weekly_mean) / weekly_mean
-			
-			label = date_label(drange)			
-			result[label] = change*100
+			change = (np.diff(weekly_mean)/weekly_mean[0])*100
+					
+			result[label] = change[0]
 			week_list.append(label)
-			print(last_year, weekly_mean, change, label)
-			weekly_sum = 0
-			last_year = 0
+			
+			weekly = []
 			drange = [curdate, d_delta(curdate, 7)]
 
 	return [result, week_list]
 
-def XXXse_data(csv_file, start_date):
-	data = pd.read_csv(csv_file, delimiter=";")
-	weekly_sum = 0
-	daterange = []
-	result = {}
-	week_list = []
-	data = data.dropna(axis=1, how='all') # Drop a year with all missing values
-	years = len(data.values[0])
-	print("Years accounted for: {} {}".format(years, csv_file))
-	for i,d in enumerate(data.values, 1):
 
-		datacols = d[1:years]
-		datacols = datacols.astype(np.float)
-		weekly_sum += datacols
-		if (i % 8 == 1):
-			label = d[0].split(".")
-			label.reverse()
-		
-		elif (i % 8 == 0):
-			
-			label1 = d[0].split(".")
-			label1.reverse()
-			label = "%s-%s" % ("".join(label1), "".join(label))
-			
-			last_el  = len(weekly_sum) - 1
-			weekly_mean = np.nanmean(weekly_sum[0:last_el])
-			this_year = weekly_sum[last_el]
-			change = (this_year - weekly_mean) / weekly_mean
-			result[label] = change*100
-			week_list.append(label)
-			weekly_sum = 0
-			
-	
-	return [result, week_list]
 
 
 if __name__ == "__main__":
@@ -289,7 +256,8 @@ if __name__ == "__main__":
 		print("Plotting ...", week)
 		week_data = {}
 		for city in city_list:
-			week_data[city_indices[city]] = data[city][week]
+			week_data[city_indices[city]] = data[city].get(week,-100)
+		print(week_data)
 		plot_map(map_data, week_data, week)
 
 	

@@ -17,12 +17,12 @@ def make_animation(inpdir, output):
       final += [im, im]
     for im in images[faster:]:
       final += [im, im, im]
-    
+    final = images
     output = os.path.join(inpdir, output)
     final[0].save(output, format='GIF',
                append_images=final[1:],
                save_all=True,
-               duration=500)
+               duration=1000)
     return output
 def make_mp4(avi, output):
     
@@ -45,13 +45,14 @@ def make_video(inpdir, output):
     
     faster = int(len(images)*60/100)
     final = [] #images[0:faster]
-    for  im in images[0:faster]:
+    """for  im in images[0:faster]:
       final += [im, im]
     for im in images[faster:]:
       final += [im, im, im]
-
+    """
+    final = images
     output = os.path.join(inpdir, output)
-    out = cv2.VideoWriter(output,cv2.VideoWriter_fourcc(*'DIVX'), 3, size)
+    out = cv2.VideoWriter(output,cv2.VideoWriter_fourcc(*'DIVX'), 5, size)
    
     for i in range(len(final)):
         out.write(final[i])
