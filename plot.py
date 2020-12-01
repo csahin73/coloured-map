@@ -37,7 +37,8 @@ def locate_cities(map_data, search):
 		"Diyarbakir": "Diyarbakır",
 		"Elazig": "Elazığ",
 		"Tekirdag": "Tekirdağ",
-		"Usak": "Uşak"
+		"Usak": "Uşak",
+		"Ankara_Weekly": "Ankara"
 	}
 	result = {}
 	for i,city in enumerate(search):
@@ -142,7 +143,9 @@ def plot_map(map_data, data, week):
 	plt.close()
 
 def format_week(week):
+	print(week)
 	week2, week1 = week.split("-")
+	print(week1,week2)
 	month1 = MONTHS.get(week1[4:6], week1[4:6])
 	month2 = MONTHS.get(week2[4:6], week2[4:6])
 
@@ -153,7 +156,69 @@ def format_week(week):
 	
 	return week
 
-def parse_data(csv_file):
+from datetime import datetime, timedelta
+def str_date(d_str):
+	date = datetime.strptime(d_str, "%d.%m.%Y")
+	return date
+
+def d_delta(d,delta):
+	d = d + timedelta(days=delta)
+	return d
+
+def is_date_in_range(drange, c):
+	if c>drange[0] and c<=drange[1]:
+		return True
+	return False
+
+def date_label(drange):
+	label = []
+	for d in drange:
+		label.insert(0, d.strftime("%Y%m%d"))
+	return "-".join(label)
+
+def parse_data(csv_file, start_date, end_date):
+	data = pd.read_csv(csv_file, delimiter=";")
+	weekly_sum = 0
+	last_year = 0
+	daterange = []
+	result = {}
+	week_list = []
+	data = data.dropna(axis=1, how='all') # Drop a year with all missing values
+	years = len(data.values[0])
+	print("Years accounted for: {} {}".format(years, csv_file))
+	#end_date="01.03.2020"
+	dfinal = str_date(end_date)
+	dstart = str_date(start_date)
+	dend = d_delta(dstart, 7)
+	drange = [dstart, dend]
+	for i,d in enumerate(data.values, 1):
+		curdate = str_date(d[0])
+
+		if (curdate > dfinal):
+			break
+
+		if (is_date_in_range(drange, curdate) ):
+			datacols = d[1:years]
+			datacols = datacols.astype(np.float)
+			weekly_sum += np.nansum(datacols[0:-1])
+			last_year += np.nansum(datacols[-1])
+		
+		if (curdate >= drange[1]):
+			
+			weekly_mean = weekly_sum*1./(years-2)
+			change = (last_year - weekly_mean) / weekly_mean
+			
+			label = date_label(drange)			
+			result[label] = change*100
+			week_list.append(label)
+			print(last_year, weekly_mean, change, label)
+			weekly_sum = 0
+			last_year = 0
+			drange = [curdate, d_delta(curdate, 7)]
+
+	return [result, week_list]
+
+def XXXse_data(csv_file, start_date):
 	data = pd.read_csv(csv_file, delimiter=";")
 	weekly_sum = 0
 	daterange = []
@@ -163,6 +228,7 @@ def parse_data(csv_file):
 	years = len(data.values[0])
 	print("Years accounted for: {} {}".format(years, csv_file))
 	for i,d in enumerate(data.values, 1):
+
 		datacols = d[1:years]
 		datacols = datacols.astype(np.float)
 		weekly_sum += datacols
@@ -197,29 +263,28 @@ if __name__ == "__main__":
 				 'diyarbakir', 'elazig', 'erzurum',
 				 'hatay', 'kayseri', 'kocaeli',
 				  'konya', 'malatya', 'sakarya', 
-				  'sivas', 'tekirdag', 'usak'
+				  'sivas', 'tekirdag', 'usak', 'ankara_weekly'
 				]
 
-	
+	#city_list = ['usak']
+
 	city_indices = locate_cities(map_data, city_list)
 	print(city_indices)
 	DATADIR = "data"
 	data = {}
 	all_weeks = []
+	week_start = "01.01.2020"
+	week_end = "12.11.2020"
+
 	for csv in city_list:
 		csv_file = os.path.join(DATADIR,csv+".csv")
-		city_data, week_list = parse_data(csv_file)
+		city_data, week_list = parse_data(csv_file, week_start, week_end)
 		all_weeks += week_list
 		data[csv] = city_data
 
 	all_weeks = sorted(list(set(all_weeks)))
-
-	week_start = "20190101"
-	week_end = "20201111"
 	
-	for week in all_weeks:#[0:3]:
-		if (week > week_end or week < week_start):
-			continue
+	for week in all_weeks:
 
 		print("Plotting ...", week)
 		week_data = {}

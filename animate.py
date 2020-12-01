@@ -12,7 +12,9 @@ def make_animation(inpdir, output):
 
     images = [Image.open(os.path.join(inpdir,fn)) for fn in  img_files]
     faster = int(len(images)*60/100)
-    final = images[1:faster]
+    final = [] #images[1:faster]
+    for  im in images[0:faster]:
+      final += [im, im]
     for im in images[faster:]:
       final += [im, im, im]
     
@@ -42,7 +44,9 @@ def make_video(inpdir, output):
     size = (width,height)
     
     faster = int(len(images)*60/100)
-    final = images[0:faster]
+    final = [] #images[0:faster]
+    for  im in images[0:faster]:
+      final += [im, im]
     for im in images[faster:]:
       final += [im, im, im]
 
