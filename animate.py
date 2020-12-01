@@ -52,7 +52,7 @@ def make_video(inpdir, output):
     """
     final = images
     output = os.path.join(inpdir, output)
-    out = cv2.VideoWriter(output,cv2.VideoWriter_fourcc(*'DIVX'), 5, size)
+    out = cv2.VideoWriter(output,cv2.VideoWriter_fourcc(*'DIVX'), 1, size)
    
     for i in range(len(final)):
         out.write(final[i])
