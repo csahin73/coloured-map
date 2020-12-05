@@ -61,4 +61,8 @@ def make_video(inpdir, output):
     
 if __name__ == "__main__":
 
-    make_animation("images", "anim.gif")
+    
+    video = make_video("images", "anim.avi")
+    animgif = make_animation("images", "anim.gif")
+
+    make_mp4(video, "images/anim.mp4")

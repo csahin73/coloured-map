@@ -57,11 +57,19 @@ def locate_cities(map_data, search):
 def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
     
     color_list = 'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval)
-    
+    print("colorlist: {}".format(color_list))
     new_cmap = colors.LinearSegmentedColormap.from_list(
         color_list,
         cmap(np.linspace(minval, maxval, n)))
+    
     return new_cmap
+
+def custom_colors(cmap, minval=0.0, maxval=1.0, n=100):
+	clr = cmap(np.linspace(minval, maxval, n))
+	light_blue = np.array([220/256, 238/256, 255/256, 1])
+	clr[:1, :] = light_blue
+	newcmp = colors.ListedColormap(clr)
+	return newcmp
 
 def plot_style_custom():
 	
@@ -86,9 +94,10 @@ def plot_style_custom():
 
 def plot_style():
 	
-	boundaries = list(range(-5,105,5))
-	boundaries.insert(0, -30)
-	cmap2 = truncate_colormap(plt.get_cmap('YlOrBr'), 0.05, 1, 22)
+	boundaries = list(range(0,105,5))
+	boundaries.insert(0, -50)
+	# cmap2 = truncate_colormap(plt.get_cmap('YlOrBr'), 0.05, 1, 22)
+	cmap2 = custom_colors(plt.get_cmap('YlOrBr'), 0., 1,21)
 	cmap2.set_under("w")
 	norm = colors.BoundaryNorm(boundaries, cmap2.N) #, clip=True)
 
@@ -97,7 +106,7 @@ def plot_style():
 		"norm": norm,
 		"ticks": boundaries
 	}
-
+from matplotlib import gridspec
 def plot_map(map_data, data, week):
 	arr = np.full(len(map_data.name), -100)
 	
@@ -109,31 +118,37 @@ def plot_map(map_data, data, week):
 	
 	map_data['colors'] = arr
 
-	fig, ax = plt.subplots(1, figsize=(8, 6))
-
+	fig, ax1 = plt.subplots(1, figsize=(7, 5))
+	#fig = plt.figure()
+	"""
+	spec = gridspec.GridSpec(ncols=1, nrows=2, height_ratios=[3, 1])
+	ax1 = fig.add_subplot(spec[0])
+	ax2 = fig.add_subplot(spec[1])
+	"""
 	style = plot_style()
-	
 	sm = plt.cm.ScalarMappable(cmap=style['cmap'], 
 				norm=style['norm'])
-	
 	cb = fig.colorbar(sm, ticks= style['ticks'], 
-						orientation='horizontal', extend="max")
+						orientation='horizontal', extend="max", ax = ax1)
 	cb.set_label("Oransal artis %")
 	
-	map_data.plot(column = 'colors', ax = ax, 
+	title = "Normal uzeri olum orani - Excess mortality rate" 
+	ax1.set_title(title, {'fontsize': 20})
+
+	map_data.plot(column = 'colors', ax = ax1, 
 							edgecolor='black',
 							linewidth=0.5,
 							cmap = style['cmap'],
 							norm = style['norm'],
 							legend = False)
 	
-	title = "Normal uzeri olum orani - Excess mortality rate" 
-	plt.title(title, {'fontsize': 20})
-	
 	txt = "{}".format(format_week(week))
 	fig.text(0.3, 0.22, txt, {'color': "blue", 'fontsize': 24}, alpha=1)
-
-	
+	"""
+	x = ["01", "02", "03", "04", "05"]
+	y = [12,25,0,-5,40]
+	ax2.plot(x, y)
+	"""
 	ack = "Gorsel: @cihansah73\nData  : @GucluYaman"
 	fig.text(0.016, 0.0, ack,{'color': 'blue', 'fontsize': 10}, alpha=.7)
 	plt.tight_layout()
@@ -232,8 +247,8 @@ if __name__ == "__main__":
 				  'konya', 'malatya', 'sakarya', 
 				  'sivas', 'tekirdag', 'usak', 'ankara_weekly'
 				]
-
 	#city_list = ['usak']
+	#city_list = ['ankara_weekly']
 
 	city_indices = locate_cities(map_data, city_list)
 	print(city_indices)
@@ -261,7 +276,7 @@ if __name__ == "__main__":
 		plot_map(map_data, week_data, week)
 
 	
-	
+	#sys.exit()
 	make_video("images", "anim.avi")
 	animgif = make_animation("images", "anim.gif")
 
