@@ -277,7 +277,7 @@ if __name__ == "__main__":
 
 	
 	#sys.exit()
-	make_video("images", "anim.avi")
+	video = make_video("images", "anim.avi")
 	animgif = make_animation("images", "anim.gif")
 
-	make_mp4(animgif, "images/anim.mp4")
+	make_mp4(video, "images/anim.mp4")
