@@ -27,11 +27,14 @@ def make_animation(inpdir, output):
 def make_mp4(avi, output):
     
     cmd = []
-    cmd.append("ffmpeg -y -i {}".format(avi)) 
+    """cmd.append("ffmpeg -y -i {}".format(avi)) 
     cmd.append("-movflags faststart -pix_fmt yuv420p -vf") 
     cmd.append("'scale=trunc(iw/2)*2:trunc(ih/2)*2'")
     cmd.append(output)
-
+    """
+    cmd.append("ffmpeg -y -i {}".format(avi))
+    cmd.append("-vcodec libx264 -acodec libfaac")
+    cmd.append(output)
     cmd = " ".join(cmd)
     os.system(cmd)
     return output

@@ -66,7 +66,7 @@ def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
 
 def custom_colors(cmap, minval=0.0, maxval=1.0, n=100):
 	clr = cmap(np.linspace(minval, maxval, n))
-	light_blue = np.array([220/256, 238/256, 255/256, 1])
+	light_blue = np.array([214/256, 234/256, 248/256, 1])
 	clr[:1, :] = light_blue
 	newcmp = colors.ListedColormap(clr)
 	return newcmp
@@ -118,7 +118,7 @@ def plot_map(map_data, data, week):
 	
 	map_data['colors'] = arr
 
-	fig, ax1 = plt.subplots(1, figsize=(7, 5))
+	fig, ax1 = plt.subplots(1, figsize=(12, 9))
 	#fig = plt.figure()
 	"""
 	spec = gridspec.GridSpec(ncols=1, nrows=2, height_ratios=[3, 1])
@@ -143,7 +143,7 @@ def plot_map(map_data, data, week):
 							legend = False)
 	
 	txt = "{}".format(format_week(week))
-	fig.text(0.3, 0.22, txt, {'color': "blue", 'fontsize': 24}, alpha=1)
+	fig.text(0.35, 0.22, txt, {'color': "blue", 'fontsize': 24}, alpha=1)
 	"""
 	x = ["01", "02", "03", "04", "05"]
 	y = [12,25,0,-5,40]
@@ -151,6 +151,7 @@ def plot_map(map_data, data, week):
 	"""
 	ack = "Gorsel: @cihansah73\nData  : @GucluYaman"
 	fig.text(0.016, 0.0, ack,{'color': 'blue', 'fontsize': 10}, alpha=.7)
+	plt.axis('off')
 	plt.tight_layout()
 	fname = "images/em-{}.png".format(week)
 	plt.savefig(fname, bbox_inches='tight')
@@ -280,4 +281,4 @@ if __name__ == "__main__":
 	video = make_video("images", "anim.avi")
 	animgif = make_animation("images", "anim.gif")
 
-	make_mp4(video, "images/anim.mp4")
+	make_mp4(animgif, "images/anim.mp4")
