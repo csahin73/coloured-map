@@ -33,7 +33,7 @@ def make_mp4(avi, output):
     cmd.append(output)
     """
     cmd.append("ffmpeg -y -i {}".format(avi))
-    cmd.append("-vcodec libx264 -acodec libfaac")
+    cmd.append("-vcodec libx264 -acodec libfaac -pix_fmt yuv420p")
     cmd.append(output)
     cmd = " ".join(cmd)
     os.system(cmd)
