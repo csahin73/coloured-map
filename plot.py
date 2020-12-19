@@ -37,7 +37,14 @@ def locate_cities(map_data, search):
 		"Elazig": "Elazığ",
 		"Tekirdag": "Tekirdağ",
 		"Usak": "Uşak",
-		"Ankara_Weekly": "Ankara"
+		"Ankara_Weekly": "Ankara",
+		"Bandirma" : 'Balıkesir',
+		"Nazilli": 'Aydın',
+		"Cankiri" : "Çankırı",
+		"Corum": "Çorum",
+		"Gumushane": 'Gümüşhane',
+		"Kirikkale" : 'Kırıkkale'
+
 	}
 	result = {}
 	for i,city in enumerate(search):
@@ -107,7 +114,7 @@ def plot_style():
 		"ticks": boundaries
 	}
 from matplotlib import gridspec
-def plot_map(map_data, data, week):
+def plot_map(fname, map_data, data, week):
 	arr = np.full(len(map_data.name), -100)
 	
 	for x in data.keys():
@@ -153,7 +160,7 @@ def plot_map(map_data, data, week):
 	fig.text(0.016, 0.0, ack,{'color': 'blue', 'fontsize': 10}, alpha=.7)
 	plt.axis('off')
 	plt.tight_layout()
-	fname = "images/em-{}.png".format(week)
+	
 	plt.savefig(fname, bbox_inches='tight')
 	plt.close()
 
@@ -246,7 +253,9 @@ if __name__ == "__main__":
 				 'diyarbakir', 'elazig', 'erzurum',
 				 'hatay', 'kayseri', 'kocaeli',
 				  'konya', 'malatya', 'sakarya', 
-				  'sivas', 'tekirdag', 'usak', 'ankara_weekly'
+				  'sivas', 'tekirdag', 'usak', 'ankara_weekly',
+				   'bandirma', 'cankiri', 'corum', 'gumushane',
+				    'karaman', 'kirikkale', 'nazilli', 'osmaniye' 
 				]
 	#city_list = ['usak']
 	#city_list = ['ankara_weekly']
@@ -257,7 +266,7 @@ if __name__ == "__main__":
 	data = {}
 	all_weeks = []
 	week_start = "01.01.2020"
-	week_end = "12.11.2020"
+	week_end = "12.12.2020"
 
 	for csv in city_list:
 		csv_file = os.path.join(DATADIR,csv+".csv")
@@ -267,18 +276,20 @@ if __name__ == "__main__":
 
 	all_weeks = sorted(list(set(all_weeks)))
 	
-	for week in all_weeks:
+	for i, week in enumerate(all_weeks):
 
 		print("Plotting ...", week)
 		week_data = {}
 		for city in city_list:
 			week_data[city_indices[city]] = data[city].get(week,-100)
 		print(week_data)
-		plot_map(map_data, week_data, week)
+		num=f'{i:03}'
+		fname = "images/em-{}.png".format(num)
+		plot_map(fname, map_data, week_data, week)
 
 	
 	#sys.exit()
 	video = make_video("images", "anim.avi")
 	animgif = make_animation("images", "anim.gif")
-
-	make_mp4(animgif, "images/anim.mp4")
+	mp4 = make_mp4_images("images", "anim_mp.mp4")
+	#make_mp4(animgif, "images/anim.mp4")

@@ -5,7 +5,9 @@ import random
 import argparse
 import webbrowser
 import cv2
-
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 def make_animation(inpdir, output):
     
     img_files = sorted((fn for fn in os.listdir(inpdir) if fn.endswith('.png')))
@@ -24,6 +26,7 @@ def make_animation(inpdir, output):
                save_all=True,
                duration=1000)
     return output
+
 def make_mp4(avi, output):
     
     cmd = []
@@ -36,6 +39,24 @@ def make_mp4(avi, output):
     cmd.append("-vcodec libx264 -acodec libfaac -pix_fmt yuv420p")
     cmd.append(output)
     cmd = " ".join(cmd)
+    os.system(cmd)
+    return output
+
+def make_mp4_images(inpdir, output):
+    
+    cmd = []
+    """cmd.append("ffmpeg -y -i {}".format(avi)) 
+    cmd.append("-movflags faststart -pix_fmt yuv420p -vf") 
+    cmd.append("'scale=trunc(iw/2)*2:trunc(ih/2)*2'")
+    cmd.append(output)
+    """
+    imgs = "{}/em-%03d.png".format(inpdir)
+    cmd.append("ffmpeg -y -framerate 1 -i {}".format(imgs))
+    cmd.append("-s 1188x816")
+    cmd.append("-crf 25 -vcodec libx264 -acodec libfaac -pix_fmt yuv420p")
+    cmd.append(output)
+    cmd = " ".join(cmd)
+    print(cmd)
     os.system(cmd)
     return output
 
@@ -65,7 +86,10 @@ def make_video(inpdir, output):
 if __name__ == "__main__":
 
     
-    video = make_video("images", "anim.avi")
-    animgif = make_animation("images", "anim.gif")
+    #video = make_video("images", "anim.avi")
+    #animgif = make_animation("images", "anim.gif")
 
-    make_mp4(video, "images/anim.mp4")
+    #make_mp4(video, "images/anim.mp4")
+  
+    mp4 = make_mp4_images("images", "anim_mp.mp4")
+    print(mp4)
