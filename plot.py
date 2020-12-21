@@ -187,7 +187,7 @@ def d_delta(d,delta):
 	return d
 
 def is_date_in_range(drange, c):
-	if c>drange[0] and c<=drange[1]:
+	if c>=drange[0] and c<drange[1]:
 		return True
 	return False
 
@@ -208,37 +208,38 @@ def parse_data(csv_file, start_date, end_date):
 	
 	dfinal = str_date(end_date)
 	dstart = str_date(start_date)
-	dend = d_delta(dstart, 7)
+	increment = 7
+	dend = d_delta(dstart, increment)
 	drange = [dstart, dend]
 	weekly = []
-	for i,d in enumerate(data.values, 1):
+	for i,d in enumerate(data.values,1):
 		curdate = str_date(d[0])
 
 		if (curdate > dfinal):
 			break #drange[1] = curdate
 
-		if (is_date_in_range(drange, curdate) ):
-			datacols = d[1:years]
-			datacols = datacols.astype(np.float)
-			
-			if not np.isnan(datacols[-1]):
-				weekly.append([np.nanmean(datacols[0:-1]), datacols[-1]] )
-
-		if (curdate >= drange[1]):
+		if (curdate == drange[1]):
 			label = date_label(drange)
 			if not weekly:
 				continue
 
-			weekly_mean = np.mean(weekly, axis= 0)
-			
+			weekly_mean = np.nanmean(weekly, axis= 0)
+			#print(weekly, weekly_mean)
 			change = (np.diff(weekly_mean)/weekly_mean[0])*100
 					
 			result[label] = change[0]
 			week_list.append(label)
 			
 			weekly = []
-			drange = [curdate, d_delta(curdate, 7)]
+			drange = [curdate, d_delta(curdate, increment)]
 
+		if (is_date_in_range(drange, curdate) ):
+			datacols = d[1:years]
+			datacols = datacols.astype(np.float)
+			
+			#print(datacols)
+			weekly.append([np.nanmean(datacols[0:-1]), datacols[-1]] )
+	
 	return [result, week_list]
 
 
@@ -257,7 +258,7 @@ if __name__ == "__main__":
 				   'bandirma', 'cankiri', 'corum', 'gumushane',
 				    'karaman', 'kirikkale', 'nazilli', 'osmaniye' 
 				]
-	#city_list = ['usak']
+	# city_list = ['usak']
 	#city_list = ['ankara_weekly']
 
 	city_indices = locate_cities(map_data, city_list)
