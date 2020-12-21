@@ -7,7 +7,7 @@ import os
 import sys
 import math
 from datetime import datetime, timedelta
-from animate import make_animation, make_video, make_mp4
+from animate import make_animation, make_video, make_mp4_images
 
 MONTHS= {
 	"01" : "Oca",
@@ -73,7 +73,7 @@ def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
 
 def custom_colors(cmap, minval=0.0, maxval=1.0, n=100):
 	clr = cmap(np.linspace(minval, maxval, n))
-	light_blue = np.array([214/256, 234/256, 248/256, 1])
+	light_blue = np.array([240/256, 248/256, 254/256, 1])
 	clr[:1, :] = light_blue
 	newcmp = colors.ListedColormap(clr)
 	return newcmp
